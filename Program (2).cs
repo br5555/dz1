@@ -130,7 +130,7 @@ namespace dz1_zadatak2
             {
                 if((_univerzalnaLista.Count() - 1) >= SizeOfList)
                 {
-                    Console.WriteLine("Lista je premalena");
+                   _univerzalnaLista = new List<X>(2 * SizeOfList);
                 }
                 else
                 {
@@ -152,6 +152,10 @@ namespace dz1_zadatak2
 
             public X GetElement(int index)
             {
+                if(index >= _univerzalnaLista.Count || index < 0)
+                {
+                    throw new IndexOutOfRangeException();
+                }
 
                 return _univerzalnaLista[index];
             }

@@ -87,7 +87,7 @@ namespace dz1_zadatak1
                 }
                 else
                 {
-                    Console.WriteLine("Nema te dovoljno mjesta");
+                    _internalStorage =new int[2 * sizeList];
                 }
             }
 
@@ -115,7 +115,7 @@ namespace dz1_zadatak1
             public int GetElement(int index)
             {   if (index > currentIndex || index < 0)
                 {
-                    return -1;
+                    throw new IndexOutOfRangeException();
                 }
                 return _internalStorage[index];
             }
