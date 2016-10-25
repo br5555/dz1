@@ -1,23 +1,23 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace dz1_zadatak2
+namespace dz1_zadatak1
 {
-    public interface IGenericList<X> : IEnumerable<X>    {
+    public interface IIntegerList
+    {
         ///<summary>
         ///Adds an item to the collection
         /// </summary>
-        void Add(X item);
+        void Add(int item);
 
         ///<summary>
-        ///Removes the first occurrence of an item from the collection
-        ///If the item was not found, method does nothing.
+        ///Removes the first occurrence of an item from the collection.
+        ///If the item was not found, method does nothing
         /// </summary>
-        bool Remove(X item);
+        bool Remove(int item);
 
         ///<summary>
         ///Removes the item at the given index in the collection
@@ -25,183 +25,153 @@ namespace dz1_zadatak2
         bool RemoveAt(int index);
 
         ///<summary>
-        ///Returns the item at the given index in the collection
+        ///Returns the item at the given index in the collection.
         /// </summary>
-        X GetElement(int index);
+        int GetElement(int index);
 
         ///<summary>
         ///Returns the index of the item in the collection.
         ///If item is not found in the collection, method returns -1
         /// </summary>
-        int IndexOf(X item);
+        int IndexOf(int item);
 
         ///<summary>
-        ///Readonly property. Gets the number of items contained in the collection.
+        ///Readonly property.Gets the number of items contained in the collection.
         /// </summary>
         int Count { get; }
 
         ///<summary>
-        ///Removes all items from the collection.
+        ///Removes all items from the collection
         /// </summary>
         void Clear();
 
         ///<summary>
-        ///Determines whether the collection contains a specific value.
+        ///determines whether the collection contains a specific value.
         /// </summary>
-        bool Contains(X item);
+        bool Contains(int item);
+
 
     }
 
+
     class Program
     {
-        public class GenericListEnumerator<X> : IEnumerator<X>
+        public class IntegerList : IIntegerList
         {
-            private GenericList<X> _univerzalanaLista;
-            private int currentIndex ;
-
-            public GenericListEnumerator(GenericList<X> lista)
-            {
-                _univerzalanaLista = lista;
-                currentIndex = -1;
-            }
-
-            public X Current
-            {
-                get
-                {
-                    try
-                    {
-                        return _univerzalanaLista.GetElement(currentIndex);
-                    }
-                    catch (IndexOutOfRangeException)
-                    {
-                        throw new InvalidOperationException();
-                    }
-                }
-            }
-
-            object IEnumerator.Current
-            {
-                get
-                {
-                    return Current;
-                }
-            }
-
-            public void Dispose()
-            {
-                throw new NotImplementedException(); ;
-            }
-
-            public bool MoveNext()
-            {
-                
-                currentIndex++;
-                return (currentIndex < _univerzalanaLista.Count);
-            }
-
-            public void Reset()
-            {
-                currentIndex=-1;
-            }
-        }
-        public class GenericList<X> : IGenericList<X>
-        {
-            private List<X> _univerzalnaLista;
-            
-            private int SizeOfList;
-            
-            public GenericList(int a)
-            {
-                _univerzalnaLista = new List<X>(a);
-                SizeOfList = a;
-                
-            }
+            private int[] _internalStorage;
+            private int currentIndex;
+            private int sizeList;
 
             public int Count
             {
                 get
                 {
-                    return _univerzalnaLista.Count();
+                   return _internalStorage.Count();
                 }
             }
 
-            public void Add(X item)
+            public IntegerList(int a)
             {
-                if((_univerzalnaLista.Count() - 1) >= SizeOfList)
+                _internalStorage = new int[a];
+                currentIndex = -1;
+                sizeList = a;
+            }
+
+            public void Add(int item)
+            {
+                if(currentIndex < sizeList)
                 {
-                   _univerzalnaLista = new List<X>(2 * SizeOfList);
+                    _internalStorage[++currentIndex] = item;
+
+
                 }
                 else
                 {
-                    
-                    _univerzalnaLista.Add(item);
+                    int[] privremenalista = new int[2*sizeList];
+                    Array.Copy(_internalStorage, privremenalista, sizeList);
+                    _internalStorage =new int[2 * sizeList];
+                    Array.Copy(privremenalista, _internalStorage, sizeList);
+                    _internalStorage[++currentIndex] = item;
                 }
-                   
             }
 
-            public void Clear()
+            public bool Remove(int item)
             {
-             _univerzalnaLista.Clear();
-            }
 
-            public bool Contains(X item)
-            {
-               return _univerzalnaLista.Contains(item);
-            }
-
-            public X GetElement(int index)
-            {
-                if(index >= _univerzalnaLista.Count || index < 0)
-                {
-                    throw new IndexOutOfRangeException();
-                }
-
-                return _univerzalnaLista[index];
-            }
-
-            public int IndexOf(X item)
-            {   
-               return _univerzalnaLista.FindIndex(a =>  a.Equals(item));
-            }
-
-            public bool Remove(X item)
-            {   
-                bool postoji = _univerzalnaLista.Contains(item); 
-                _univerzalnaLista.Remove(item);
-                
-                return postoji;
+               _internalStorage= _internalStorage.Where(c => c != item).ToArray();
+                currentIndex--;
+                return Array.Exists(_internalStorage, a => a == item);
             }
 
             public bool RemoveAt(int index)
             {
-                if( (_univerzalnaLista.Count() -1) < index || index < 0)
+                if(index > currentIndex || index < 0)
                 {
                     return false;
                 }
-                _univerzalnaLista.RemoveAt(index);
+                int itemToRemove = _internalStorage[index];
                 
+                _internalStorage = _internalStorage.Where(c => c != itemToRemove).ToArray();
+                currentIndex--;
                 return true;
             }
-            public IEnumerator<X> GetEnumerator()
-            {
-                return new GenericListEnumerator<X>(this);
+
+            public int GetElement(int index)
+            {   if (index > currentIndex || index < 0)
+                {
+                    throw new IndexOutOfRangeException();
+                }
+                return _internalStorage[index];
             }
-            IEnumerator IEnumerable.GetEnumerator()
+
+            public int IndexOf(int item)
             {
-                return GetEnumerator();
+                return   Array.FindIndex(_internalStorage, n => n == item);
+            }
+
+            public void Clear()
+            {
+                Array.Clear(_internalStorage, 0, _internalStorage.Count());
+            }
+
+            public bool Contains(int item)
+            {
+               return Array.Exists(_internalStorage, c => c == item);
             }
         }
 
+
         static void Main(string[] args)
         {
-
-            GenericList<int> proba = new GenericList<int>(8);
+            IntegerList proba = new IntegerList(8);
             proba.Add(8);
-            proba.Add(16);
+            proba.Add(1);
+            proba.Add(11);
+            proba.Add(13);
+            proba.Add(3);
             proba.Add(99);
+            Console.WriteLine(proba.Count);
+            for(int i = 0; i < proba.Count; i++)
+            {
+                Console.WriteLine(proba.GetElement(i));
+            }
+            Console.WriteLine(proba.Contains(13));
+            Console.WriteLine(proba.GetElement(2));
             Console.WriteLine(proba.IndexOf(99));
+            proba.Remove(1);
+            proba.RemoveAt(4);
+            proba.Add(66);
+            for (int i = 0; i < proba.Count; i++)
+            {
+                Console.WriteLine(proba.GetElement(i));
+            }
             Console.Read();
+       
+
+
+
+
+
 
         }
     }
